@@ -15,7 +15,7 @@ async function main() {
   }
   const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
   const version = pkg.version;
-  console.log(`📦 Releasing super-memory@${version}...`);
+  console.log(`📦 Releasing super-memory-evolution@${version}...`);
 
   try {
     // 2. Commit and Push to Git
@@ -47,7 +47,7 @@ async function main() {
     console.log('✈️ Publishing skill to ClawHub...');
     const changelog = `Release v${version}`;
     execSync(
-      `npx clawhub publish . --slug super-memory --version ${version} --changelog "${changelog}"`,
+      `npx clawhub publish . --slug super-memory-evolution --version ${version} --changelog "${changelog}"`,
       { stdio: 'inherit', cwd: srcDir }
     );
     console.log('✨ ClawHub Publish Completed Successfully!');

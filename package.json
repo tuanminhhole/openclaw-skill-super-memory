@@ -1,5 +1,5 @@
 {
-  "name": "openclaw-skill-super-memory",
+  "name": "openclaw-skill-super-memory-evolution",
   "version": "1.0.1",
   "description": "An OpenClaw skill to enable autonomous long-term memory updates (MEMORY.md) and self-evolving skill synthesis.",
   "main": "install.js",
@@ -16,6 +16,6 @@
     "learning",
     "secondbrain"
   ],
-  "author": "Kent",
+  "author": "tuanminhhole (Kent)",
   "license": "MIT"
 }
