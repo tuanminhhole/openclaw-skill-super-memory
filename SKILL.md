@@ -1,5 +1,5 @@
 ---
-name: super-memory
+name: openclaw-skill-super-memory
 description: Tự tiến hóa bộ nhớ dài hạn MEMORY.md và đóng gói kỹ năng tự động.
 ---
 

@@ -47,7 +47,7 @@ async function main() {
     console.log('✈️ Publishing skill to ClawHub...');
     const changelog = `Release v${version}`;
     execSync(
-      `npx clawhub publish . --slug super-memory --version ${version} --changelog "${changelog}"`,
+      `npx clawhub publish . --slug openclaw-skill-super-memory --version ${version} --changelog "${changelog}"`,
       { stdio: 'inherit', cwd: srcDir }
     );
     console.log('✨ ClawHub Publish Completed Successfully!');
