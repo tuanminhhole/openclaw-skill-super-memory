@@ -7,25 +7,69 @@
 const fs = require('fs');
 const path = require('path');
 
-const candidateJsonPaths = [
-  'e:/williams/.openclaw/openclaw.json',
-  '/home/node/project/.openclaw/openclaw.json',
-  '/root/project/.openclaw/openclaw.json',
-  path.join(process.cwd(), '.openclaw', 'openclaw.json'),
-  path.join(process.cwd(), 'openclaw.json'),
-  path.join(process.cwd(), '..', '.openclaw', 'openclaw.json'),
-  path.join(process.cwd(), '..', 'openclaw.json'),
-  path.join(process.cwd(), '..', '..', '.openclaw', 'openclaw.json'),
-  path.join(process.cwd(), '..', '..', 'openclaw.json')
-];
-
-let openclawJsonPath = null;
-for (const p of candidateJsonPaths) {
-  if (fs.existsSync(p)) {
-    openclawJsonPath = path.resolve(p);
-    break;
+function findOpenclawJson() {
+  // 1. Try env variables
+  const envHome = process.env.OPENCLAW_HOME || process.env.OPENCLAW_STATE_DIR;
+  if (envHome) {
+    const candidatePaths = [
+      path.join(envHome, 'openclaw.json'),
+      path.join(envHome, '.openclaw', 'openclaw.json')
+    ];
+    for (const p of candidatePaths) {
+      if (fs.existsSync(p)) return path.resolve(p);
+    }
   }
+
+  // 2. Try relative paths walking up from current script file (__dirname)
+  let current = __dirname;
+  while (true) {
+    const candidatePaths = [
+      path.join(current, 'openclaw.json'),
+      path.join(current, '.openclaw', 'openclaw.json')
+    ];
+    for (const p of candidatePaths) {
+      if (fs.existsSync(p)) return path.resolve(p);
+    }
+    const parent = path.dirname(current);
+    if (parent === current) break;
+    current = parent;
+  }
+
+  // 3. Try relative paths walking up from process working dir
+  current = process.cwd();
+  while (true) {
+    const candidatePaths = [
+      path.join(current, 'openclaw.json'),
+      path.join(current, '.openclaw', 'openclaw.json')
+    ];
+    for (const p of candidatePaths) {
+      if (fs.existsSync(p)) return path.resolve(p);
+    }
+    const parent = path.dirname(current);
+    if (parent === current) break;
+    current = parent;
+  }
+
+  // 4. Try well-known locations (user home directory)
+  const userHome = process.env.HOME || process.env.USERPROFILE || process.env.HOMEPATH;
+  if (userHome) {
+    const p = path.join(userHome, '.openclaw', 'openclaw.json');
+    if (fs.existsSync(p)) return path.resolve(p);
+  }
+
+  // 5. Hardcoded docker fallbacks
+  const fallbackPaths = [
+    '/home/node/project/.openclaw/openclaw.json',
+    '/root/project/.openclaw/openclaw.json'
+  ];
+  for (const p of fallbackPaths) {
+    if (fs.existsSync(p)) return path.resolve(p);
+  }
+
+  return null;
 }
+
+const openclawJsonPath = findOpenclawJson();
 
 if (!openclawJsonPath) {
   console.error('❌ Error: Could not locate openclaw.json in standard search directories.');
@@ -37,13 +81,21 @@ console.log(`🔍 Located openclaw.json at: ${openclawJsonPath}`);
 // Helper to resolve actual workspace path on host/container
 function resolveWorkspacePath(jsonPath, workspaceStr) {
   const openclawDir = path.dirname(jsonPath);
-  const baseDir = path.dirname(openclawDir);
   
-  let normalized = workspaceStr.replace(/^\/(home\/node|root)\/project/, '');
-  if (normalized.startsWith('/') || normalized.startsWith('\\')) {
-    normalized = normalized.slice(1);
+  // If the path exists as-is on the current OS, return it
+  if (fs.existsSync(workspaceStr)) {
+    return path.resolve(workspaceStr);
   }
-  return path.resolve(baseDir, normalized);
+  
+  // Otherwise, extract the last folder segment and resolve relative to .openclaw directory
+  const baseName = path.basename(workspaceStr.replace(/\\/g, '/'));
+  const resolved = path.resolve(openclawDir, baseName);
+  if (fs.existsSync(resolved)) {
+    return resolved;
+  }
+  
+  // Fallback to resolving relative to the parent of .openclaw
+  return path.resolve(path.dirname(openclawDir), baseName);
 }
 
 // Read openclaw.json
