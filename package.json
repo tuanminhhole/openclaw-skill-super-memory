@@ -1,6 +1,6 @@
 {
   "name": "learning-memory",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "An OpenClaw skill to enable autonomous long-term memory updates (MEMORY.md) and self-evolving skill synthesis.",
   "main": "install.js",
   "scripts": {

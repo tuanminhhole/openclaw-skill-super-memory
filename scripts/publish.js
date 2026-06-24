@@ -3,6 +3,10 @@ const fs = require('fs');
 const path = require('path');
 
 async function main() {
+  // Clear any invalid tokens to default to local logged-in account
+  delete process.env.GITHUB_TOKEN;
+  delete process.env.GH_TOKEN;
+
   const srcDir = path.join(__dirname, '..');
   const pkgPath = path.join(srcDir, 'package.json');
 
